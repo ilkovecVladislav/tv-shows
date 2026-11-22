@@ -4,7 +4,7 @@ import Pagination from './Pagination';
 import SearchBar from './SearchBar';
 import { styles } from './stylex';
 import ShowList from './ShowList';
-import { usePresenter } from './usePresenter';
+import { usePresenter } from './logic/usePresenter';
 
 function ShowsPage() {
   const presenter = usePresenter();

@@ -79,12 +79,15 @@ below strictly.
 - **Read that document before any structural decision.** Follow it strictly.
 - Key rules (details in the spec):
   - Every component is a folder (`ComponentName/`) with `index.ts`,
-    `ComponentName.tsx`, `types.ts`, `usePresenter.ts`, `stylex.ts`.
-  - Views are JSX only; all logic lives in `usePresenter.ts` (split into
+    `ComponentName.tsx`, `types.ts`, `stylex.ts`, and logic in
+    `logic/` (`usePresenter.ts`, sub-hooks, local `tasks/`).
+  - Views are JSX only; all logic lives in `logic/usePresenter.ts` (split into
     sub-hooks when it grows).
+  - Tasks are verb-named plain functions with zero React dependency; they call
+    `src/api/` abstractions, never `ky` directly.
   - Import **only** from a component's `index.ts`. Never reach into another
     component's internals.
-  - Component placement is decided by reuse scope, not by size.
+  - Component and task placement is decided by reuse scope, not by size.
   - Logic files ≤ 120 lines. No barrel files beyond `index.ts`.
 - Do not introduce FSD, Atomic Design, or another named architecture.
 - If the spec does not cover a case, present options to the project owner before

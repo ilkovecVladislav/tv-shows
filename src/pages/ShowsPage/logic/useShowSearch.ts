@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
-import { searchShows } from '../../../services/shows';
 import type { Show } from '../../../types/show';
+import { searchShows } from './tasks/searchShows';
 
 export type SearchStatus = 'idle' | 'loading' | 'success' | 'error';
 

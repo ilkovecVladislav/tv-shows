@@ -6,4 +6,4 @@ export interface SearchBarProps {
   onSubmit: () => void;
 }
 
-export type SearchBarPresenter = ReturnType<typeof usePresenter>;
+export type SearchBarViewModel = ReturnType<typeof usePresenter>;

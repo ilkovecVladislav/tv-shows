@@ -15,4 +15,4 @@ export interface GenreChipItem {
   variant: number | null;
 }
 
-export type GenreChipsPresenter = ReturnType<typeof usePresenter>;
+export type GenreChipsViewModel = ReturnType<typeof usePresenter>;

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { useShowSearch } from './hooks/useShowSearch';
-import { collectGenres, filterByGenre, PAGE_SIZE } from './utils';
+import { collectGenres, filterByGenre, PAGE_SIZE } from '../utils';
+import { useShowSearch } from './useShowSearch';
 
 export function usePresenter() {
   const [query, setQuery] = useState('');

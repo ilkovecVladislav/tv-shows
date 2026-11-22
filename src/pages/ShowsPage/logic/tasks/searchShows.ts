@@ -1,14 +1,12 @@
-import { apiClient } from '../api/client';
-import type { Show } from '../types/show';
+import { fetchShowSearch } from '../../../../api/shows';
+import type { Show } from '../../../../types/show';
 
 /**
- * Ответ TVmaze — внешние данные: читаем их как unknown и валидируем
- * на границе, невалидные элементы молча отбрасываем.
+ * Use case поиска сериалов: вызывает API и валидирует внешние данные
+ * на границе — невалидные элементы молча отбрасываются.
  */
 export async function searchShows(query: string, signal?: AbortSignal): Promise<Show[]> {
-  const raw: unknown = await apiClient
-    .get('search/shows', { searchParams: { q: query }, signal })
-    .json();
+  const raw = await fetchShowSearch(query, signal);
 
   if (!Array.isArray(raw)) {
     throw new Error('TVmaze вернул неожиданный формат ответа');

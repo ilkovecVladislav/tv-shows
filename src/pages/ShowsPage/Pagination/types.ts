@@ -6,4 +6,4 @@ export interface PaginationProps {
   onChange: (page: number) => void;
 }
 
-export type PaginationPresenter = ReturnType<typeof usePresenter>;
+export type PaginationViewModel = ReturnType<typeof usePresenter>;

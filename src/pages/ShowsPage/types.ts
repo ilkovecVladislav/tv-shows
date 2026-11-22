@@ -1,3 +1,3 @@
-import type { usePresenter } from './usePresenter';
+import type { usePresenter } from './logic/usePresenter';
 
-export type ShowsPagePresenter = ReturnType<typeof usePresenter>;
+export type ShowsPageViewModel = ReturnType<typeof usePresenter>;

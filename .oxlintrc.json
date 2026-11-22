@@ -1,8 +1,51 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
+  "plugins": [
+    "react",
+    "typescript",
+    "oxc"
+  ],
+  "jsPlugins": [
+    "@stylexjs/eslint-plugin"
+  ],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+    "react/only-export-components": [
+      "warn",
+      {
+        "allowConstantExport": true
+      }
+    ],
+    "@stylexjs/valid-styles": "error",
+    "@stylexjs/no-unused": "error",
+    "@stylexjs/no-legacy-contextual-styles": "error",
+    "@stylexjs/sort-keys": [
+      "error",
+      {
+        "order": "recess"
+      }
+    ],
+    "max-lines": [
+      "error",
+      {
+        "max": 120,
+        "skipBlankLines": true,
+        "skipComments": true
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.tsx",
+        "**/stylex.ts",
+        "**/*.stylex.ts",
+        "**/types.ts",
+        "**/types/**"
+      ],
+      "rules": {
+        "max-lines": "off"
+      }
+    }
+  ]
 }

@@ -1,11 +1,16 @@
-import react, { reactCompilerPreset } from '@vitejs/plugin-react'
-import babel from '@rolldown/plugin-babel'
-import { defineConfig } from 'vite'
+import babel from '@rolldown/plugin-babel';
+import stylex from '@stylexjs/unplugin';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    stylex.vite({
+      useCSSLayers: true
+    }),
     react(),
-    babel({ presets: [reactCompilerPreset()] })
-  ],
-})
+    babel({
+      presets: [reactCompilerPreset()]
+    })
+  ]
+});

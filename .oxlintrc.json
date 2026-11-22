@@ -24,6 +24,28 @@
       {
         "order": "recess"
       }
+    ],
+    "max-lines": [
+      "error",
+      {
+        "max": 120,
+        "skipBlankLines": true,
+        "skipComments": true
+      }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.tsx",
+        "**/stylex.ts",
+        "**/*.stylex.ts",
+        "**/types.ts",
+        "**/types/**"
+      ],
+      "rules": {
+        "max-lines": "off"
+      }
+    }
+  ]
 }

@@ -6,7 +6,7 @@ every visual block is a component folder.
 
 ## 1. Repository layout
 
-```
+```text
 src/
 ├── App.tsx                 # root component
 ├── main.tsx                # entry point
@@ -27,7 +27,7 @@ src/
 
 Every component is a folder named after the component (`PascalCase`):
 
-```
+```text
 ComponentName/
 ├── index.ts                # public API: export { default } from './ComponentName'
 ├── ComponentName.tsx       # view: JSX + JSX-only logic (conditional rendering, mapping)
@@ -35,7 +35,7 @@ ComponentName/
 ├── usePresenter.ts         # component logic
 ├── stylex.ts               # styles (stylex.create); all styles for this component
 ├── utils.ts                # optional pure helpers for this component
-└── hooks/                  # optional sub-hooks, see §5
+└── hooks/                  # optional sub-hooks, see §4
 ```
 
 - Views use **default export**. `index.ts` is a single-line re-export.
@@ -68,7 +68,27 @@ Examples:
 Never pre-emptively move a component up. Promote it only when a second consumer
 appears.
 
-## 4. Import rule (strict)
+## 4. View, presenter, and sub-hooks
+
+- **`ComponentName.tsx`** — JSX only. Allowed logic: conditional rendering, list
+  mapping, trivial JSX-local expressions. No business logic, no effects, no
+  direct HTTP calls.
+- **`usePresenter.ts`** — accepts component `props` (when needed) and returns
+  the view-model consumed by the view. Effects, subscriptions, state
+  transitions, and calls to `services/` / `api/` live here or in sub-hooks — not
+  in the view.
+- **Types (`types.ts`)** — define component `Props` and export the presenter
+  return type (`ViewModel`) from `types.ts`.
+- **Sub-hooks** — when presenter logic grows, split it into sub-hooks:
+  - 1–2 sub-hooks: files in the same component folder (e.g. `useBannerData.ts`,
+    `useBannerActions.ts`).
+  - 3+ sub-hooks: move/group them into `hooks/` (`hooks/useBannerData.ts`).
+  - Sub-hooks return plain data/handlers; they do not return JSX.
+- **Pages (`src/pages/PageName/`)** — follow the same anatomy as components;
+  page data loading, route params handling, and coordination live in the page's
+  `usePresenter.ts` and `services/`.
+
+## 5. Import rule (strict)
 
 - Import **only** from a component's `index.ts`.
 - Never import a component's internals from outside that component folder
@@ -76,46 +96,87 @@ appears.
   outside).
 - Inside a component folder, direct relative imports are allowed.
 
-## 5. View and presenter
-
-- **`ComponentName.tsx`** — JSX only. Allowed logic: conditional rendering, list
-  mapping, trivial JSX-local expressions. No business logic, no effects, no data
-  fetching.
-- **`usePresenter.ts`** — the component's logic. Returns the view-model consumed
-  by the view. Prop types live in `types.ts`; export the return type of the
-  presenter from `types.ts` as well.
-- **Sub-hooks** — when presenter logic grows, split it into sub-hooks:
-  - 1–2 sub-hooks: files in the same folder (`useBannerData.ts`,
-    `useBannerActions.ts`).
-  - 3+ sub-hooks: group them into `hooks/` (`hooks/useBannerData.ts`).
-- **Sub-hooks return plain data/handlers; they do not render.**
-- **HTTP / business logic** does not live in the presenter. Presenter calls
-  `src/services/` (or `src/api/`); services own request functions.
-- JSX decomposition limits are not enforced for now; logic limits are (§7).
-
 ## 6. Routing and HTTP
 
 - **Routing**: one central file `src/router.tsx`. Pages are folders in
   `src/pages/PageName/` with the same anatomy as components. Router library is
-  React Router or TanStack Router (final choice is a project decision, not an
-  architecture concern).
-- **HTTP**: a single configured ky client lives in `src/api/client.ts`. Request
-  functions live in `src/services/` (feature-level) or `src/api/` (generic
-  wrappers). Presenters never call `ky` or `fetch` directly.
+  React Router or TanStack Router (project-level choice).
+- **HTTP**: a single configured `ky` client lives in `src/api/client.ts`.
+  Low-level request/API functions live in `src/api/`; domain/business logic and
+  data orchestration live in `src/services/`. Presenters never call `ky` or
+  `fetch` directly.
 
 ## 7. Size limits
 
-- **Logic files** (`usePresenter.ts`, sub-hooks, `utils.ts`): **≤ 120 lines
-  each.** When a logic file approaches the limit, extract pure helpers into
-  `utils.ts` or split into sub-hooks.
-- **Views (`.tsx`) and styles (`stylex.ts`)**: no hard limit for now. Keep them
-  readable; split the visual tree when it improves comprehension.
+- **`usePresenter.ts` (and sub-hooks)**: **≤ 120 lines each**. When a presenter
+  approaches the limit, extract sub-hooks or pure helpers into `utils.ts`.
+- **Views (`ComponentName.tsx`), styles (`stylex.ts`), types (`types.ts`), and
+  `utils.ts`**: no hard 120-line limit for now. Keep them readable and split
+  when it genuinely improves clarity.
 
-## 8. Examples
+## 8. Reference component example
+
+```ts
+// ComponentName/types.ts
+export type ComponentNameProps = {
+  initialQuery?: string;
+};
+
+export type ComponentNameViewModel = {
+  query: string;
+  onQueryChange: (value: string) => void;
+};
+```
+
+```ts
+// ComponentName/usePresenter.ts
+import { useState } from 'react';
+import type { ComponentNameProps, ComponentNameViewModel } from './types';
+
+export function usePresenter({
+  initialQuery = ''
+}: ComponentNameProps): ComponentNameViewModel {
+  const [query, setQuery] = useState(initialQuery);
+
+  return {
+    query,
+    onQueryChange: setQuery
+  };
+}
+```
+
+```tsx
+// ComponentName/ComponentName.tsx
+import * as stylex from '@stylexjs/stylex';
+import { styles } from './stylex';
+import type { ComponentNameProps } from './types';
+import { usePresenter } from './usePresenter';
+
+export default function ComponentName(props: ComponentNameProps) {
+  const { query, onQueryChange } = usePresenter(props);
+
+  return (
+    <div {...stylex.props(styles.root)}>
+      <input
+        value={query}
+        onChange={e => onQueryChange(e.target.value)}
+      />
+    </div>
+  );
+}
+```
+
+```ts
+// ComponentName/index.ts
+export { default } from './ComponentName';
+export type { ComponentNameProps, ComponentNameViewModel } from './types';
+```
+
+## 9. Examples & promotion path
 
 Profile page with one non-reusable block and one page-local reusable block:
 
-```
+```text
 pages/ProfilePage/
 ├── index.ts
 ├── ProfilePage.tsx
@@ -137,7 +198,7 @@ pages/ProfilePage/
         └── stylex.ts
 ```
 
-Promotion path when `Banner` becomes needed by `Sidebar` too:
+Promotion path when `Banner` becomes needed by another consumer:
 
 ```mermaid
 flowchart LR
@@ -151,9 +212,9 @@ flowchart LR
 Nothing inside `Banner/` changes; only the folder location and the import paths
 in its consumers.
 
-## 9. Non-goals
+## 10. Non-goals
 
 - No Feature-Sliced Design, Atomic Design, or other named architectures.
 - No barrel files beyond each component's `index.ts`.
-- No premature abstraction: do not create `services/`, `hooks/`, or
-  `components/` files/folders until a real consumer exists.
+- No speculative abstractions: do not create new feature/helper files or folders
+  before a real need appears.

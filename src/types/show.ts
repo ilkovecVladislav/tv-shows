@@ -7,3 +7,22 @@ export interface Show {
   image: string | null;
   summary: string | null;
 }
+
+/** Что пользователь выбрал: поисковый запрос, жанр и страница. */
+export interface ShowSearchParams {
+  query: string;
+  genre: string | null;
+  page: number;
+}
+
+/** Одна страница выдачи и метаданные, по которым строится интерфейс. */
+export interface ShowSearchResult {
+  shows: Show[];
+  genres: string[];
+  /** жанр, который сервер реально применил как фильтр */
+  genre: string | null;
+  totalFound: number;
+  shownCount: number;
+  page: number;
+  totalPages: number;
+}

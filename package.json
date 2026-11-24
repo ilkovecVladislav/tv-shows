@@ -5,18 +5,27 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "node --watch server/index.ts",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node server/index.ts",
+    "test": "node --test \"server/**/*.test.ts\""
+  },
+  "engines": {
+    "node": ">=24 <25"
   },
   "dependencies": {
+    "@hono/node-server": "^2.1.11",
     "@stylexjs/stylex": "^0.19.2",
+    "hono": "^4.13.21",
     "ky": "^2.2.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
+    "@hono/cli": "1.0.0-rc.9",
     "@rolldown/plugin-babel": "^0.3.0",
     "@stylexjs/eslint-plugin": "^0.19.2",
     "@stylexjs/unplugin": "^0.19.2",

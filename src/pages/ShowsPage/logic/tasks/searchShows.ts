@@ -1,23 +1,54 @@
 import { fetchShowSearch } from '../../../../api/shows';
-import type { Show } from '../../../../types/show';
+import type { Show, ShowSearchParams, ShowSearchResult } from '../../../../types/show';
 
 /**
- * Use case поиска сериалов: вызывает API и валидирует внешние данные
- * на границе — невалидные элементы молча отбрасываются.
+ * Use case поиска сериалов: вызывает наш API и валидирует ответ на границе —
+ * неверная обёртка считается ошибкой, невалидные элементы отбрасываются.
  */
-export async function searchShows(query: string, signal?: AbortSignal): Promise<Show[]> {
-  const raw = await fetchShowSearch(query, signal);
+export async function searchShows(
+  params: ShowSearchParams,
+  signal?: AbortSignal,
+): Promise<ShowSearchResult> {
+  const raw = await fetchShowSearch(params, signal);
+  const result = toSearchResult(raw);
+  if (result === null) throw new Error('Сервер вернул неожиданный формат ответа');
+  return result;
+}
 
-  if (!Array.isArray(raw)) {
-    throw new Error('TVmaze вернул неожиданный формат ответа');
-  }
+function toSearchResult(raw: unknown): ShowSearchResult | null {
+  if (!isRecord(raw) || !Array.isArray(raw.shows) || !Array.isArray(raw.genres)) return null;
 
-  const shows: Show[] = [];
-  for (const item of raw) {
-    const show = toShow(isRecord(item) ? item.show : undefined);
-    if (show !== null) shows.push(show);
-  }
-  return shows;
+  const totalFound = getNumber(raw.totalFound);
+  const shownCount = getNumber(raw.shownCount);
+  const page = getNumber(raw.page);
+  const totalPages = getNumber(raw.totalPages);
+  if (totalFound === null || shownCount === null || page === null || totalPages === null) return null;
+
+  return {
+    shows: raw.shows.map(toShow).filter((show): show is Show => show !== null),
+    genres: toStrings(raw.genres),
+    genre: getString(raw.genre),
+    totalFound,
+    shownCount,
+    page,
+    totalPages,
+  };
+}
+
+function toShow(raw: unknown): Show | null {
+  if (!isRecord(raw)) return null;
+  const id = getNumber(raw.id);
+  if (id === null) return null;
+
+  return {
+    id,
+    name: getString(raw.name) ?? 'Без названия',
+    genres: toStrings(raw.genres),
+    year: getString(raw.year),
+    rating: getNumber(raw.rating),
+    image: getString(raw.image),
+    summary: getString(raw.summary),
+  };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -32,40 +63,6 @@ function getNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
-function toShow(raw: unknown): Show | null {
-  if (!isRecord(raw)) return null;
-  const id = getNumber(raw.id);
-  if (id === null) return null;
-
-  const genres = Array.isArray(raw.genres)
-    ? raw.genres.filter((genre): genre is string => typeof genre === 'string')
-    : [];
-  const image = isRecord(raw.image) ? getString(raw.image.medium) : null;
-  const rating = isRecord(raw.rating) ? getNumber(raw.rating.average) : null;
-  const premiered = getString(raw.premiered);
-  const summaryHtml = getString(raw.summary);
-
-  return {
-    id,
-    name: getString(raw.name) ?? 'Без названия',
-    genres,
-    year: premiered !== null ? premiered.slice(0, 4) : null,
-    rating,
-    image,
-    summary: summaryHtml !== null ? stripHtml(summaryHtml) : null,
-  };
-}
-
-/** TVmaze присылает описание как HTML-фрагмент — для карточки нужен чистый текст. */
-function stripHtml(html: string): string {
-  return html
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/\s+/g, ' ')
-    .trim();
+function toStrings(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
 }

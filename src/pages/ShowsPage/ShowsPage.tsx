@@ -24,7 +24,14 @@ function ShowsPage() {
         />
       </header>
 
-      <main aria-busy={presenter.status === 'loading'} {...stylex.props(styles.content)}>
+      <main
+        aria-busy={presenter.isBusy}
+        {...stylex.props(styles.content, presenter.isRefreshing && styles.refreshing)}
+      >
+        {presenter.isRefreshing && (
+          <progress aria-label="Загрузка результатов" {...stylex.props(styles.visuallyHidden)} />
+        )}
+
         {presenter.status === 'idle' && (
           <p {...stylex.props(styles.hint)}>
             Начните вводить название — например, Banana или Murder

@@ -39,6 +39,9 @@ export const styles = stylex.create({
     maxWidth: 1044,
     margin: '0 auto',
   },
+  refreshing: {
+    opacity: 0.6,
+  },
   hint: {
     margin: '56px 0',
     fontSize: 15,

@@ -7,6 +7,7 @@ below strictly.
 
 - Package manager: **pnpm** only (no npm/yarn).
 - Stack: **Vite + React 19+ + TypeScript**, **ky** (HTTP), **StyleX** (styling).
+- Backend: **Hono** on Node.js 24+ (`server/`), TypeScript run natively.
 - Prefer modern standards-based browser APIs within the project's browser
   targets.
 
@@ -16,6 +17,11 @@ below strictly.
 - `pnpm lint` (oxlint) — lint. Required after editing any `stylex.create()`.
 - `pnpm build` — full build. Required before declaring a task done.
 - `pnpm dev` — local dev server.
+- `pnpm dev:server` — API server with watch. Run it next to `pnpm dev`, which
+  proxies `/api` to it.
+- `pnpm test` — backend tests (`node --test`), no network needed.
+- `pnpm start` — production: serves the API and the built frontend. Run
+  `pnpm build` first.
 
 ## 3. Linting
 
@@ -44,6 +50,8 @@ below strictly.
 - Do not blindly retry non-idempotent requests. Consider idempotency and whether
   the body can be replayed.
 - Handle loading, empty, success, and error states. Do not swallow errors.
+- The backend follows the same rules through its own client in
+  `server/api/client.ts`.
 
 ## 6. React + TypeScript
 
@@ -98,3 +106,21 @@ below strictly.
 - Skills under `.agents/skills/` (e.g. ponytail, modern-web-guidance) provide
   strategy. This file provides constraints.
 - If a skill conflicts with this file, **this file wins**.
+
+## 11. Backend (`server/`)
+
+- Hono on Node.js. TypeScript runs natively, without a bundler or `tsx`:
+  relative imports need the `.ts` extension, and only erasable syntax is
+  allowed.
+- Layers mirror the frontend: `api/` (ky client and transport, returns
+  `unknown`), `tasks/` (verb-named plain functions: business logic, cache),
+  `app.ts` (routes validate input and return JSON), `index.ts` (entry point).
+- Same TypeScript rules as the frontend: strict, no `any`, no assertions.
+- Shaping data (TVmaze calls, filtering, pagination, cache) belongs to the
+  backend. The frontend validates responses at its boundary and renders.
+- Deploy: `render.yaml` (Render Blueprint) at the repo root.
+
+## 12. Hono CLI
+
+Run `pnpm exec hono --help` first, and use the CLI instead of a dev server to
+inspect and test the backend. The app file is `server/app.ts`.

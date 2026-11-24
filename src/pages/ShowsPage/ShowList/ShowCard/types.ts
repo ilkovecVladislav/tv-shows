@@ -5,4 +5,4 @@ export interface ShowCardProps {
   show: Show;
 }
 
-export type ShowCardPresenter = ReturnType<typeof usePresenter>;
+export type ShowCardViewModel = ReturnType<typeof usePresenter>;

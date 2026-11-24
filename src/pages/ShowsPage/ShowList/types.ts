@@ -5,4 +5,4 @@ export interface ShowListProps {
   shows: readonly Show[];
 }
 
-export type ShowListPresenter = ReturnType<typeof usePresenter>;
+export type ShowListViewModel = ReturnType<typeof usePresenter>;

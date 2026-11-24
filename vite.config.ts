@@ -12,5 +12,11 @@ export default defineConfig({
     babel({
       presets: [reactCompilerPreset()]
     })
-  ]
+  ],
+  // API крутится отдельно (`pnpm dev:server`); прокси держит запросы на том же origin
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000'
+    }
+  }
 });
